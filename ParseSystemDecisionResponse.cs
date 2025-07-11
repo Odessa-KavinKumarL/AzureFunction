@@ -1,10 +1,6 @@
 ﻿using Microsoft.Azure.Functions.Worker.Http;
 using System.Text.Json;
 using System.Xml.Linq;
-using System.Threading.Tasks;
-using System;
-using System.Linq;
-using static ParseSystemDecisionResponse;
 
 public class ParseSystemDecisionResponse
 {
@@ -53,6 +49,7 @@ public class ParseSystemDecisionResponse
                 {
                     SystemApprovalLimit = ParseDecimal(systemDecision?.Element(q1 + "SystemApprovalLimit")?.Value),
                     SystemDecision = systemDecision?.Element(q1 + "SystemDecision")?.Value,
+                    ScoreDecision = systemDecision?.Element(q1 + "ScoreDecision")?.Value,
                     SystemDecisionDate = ParseDateTime(systemDecision?.Element(q1 + "SystemDecisionDate")?.Value),
                     ApprovalConditionCode = approvalCondition?.Element(q1 + "ApprovalConditionCode")?.Value,
                     ApprovalConditionDescription = approvalCondition?.Element(q1 + "ApprovalConditionDesc")?.Value,
@@ -126,6 +123,7 @@ public class ParseSystemDecisionResponse
     {
         public decimal? SystemApprovalLimit { get; set; }
         public string SystemDecision { get; set; }
+        public string ScoreDecision { get; set; }
         public DateTime? SystemDecisionDate { get; set; }
         public string ApprovalConditionCode { get; set; }
         public string ApprovalConditionDescription { get; set; }
