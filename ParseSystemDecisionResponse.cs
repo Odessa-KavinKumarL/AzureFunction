@@ -49,11 +49,11 @@ public class ParseSystemDecisionResponse
                 {
                     SystemApprovalLimit = ParseDecimal(systemDecision?.Element(q1 + "SystemApprovalLimit")?.Value),
                     SystemDecision = systemDecision?.Element(q1 + "SystemDecision")?.Value,
-                    ScoreDecision = systemDecision?.Element(q1 + "ScoreDecision")?.Value,
+                    //ScoreDecision = systemDecision?.Element(q1 + "ScoreDecision")?.Value,
                     SystemDecisionDate = ParseDateTime(systemDecision?.Element(q1 + "SystemDecisionDate")?.Value),
                     ApprovalConditionCode = approvalCondition?.Element(q1 + "ApprovalConditionCode")?.Value,
                     ApprovalConditionDescription = approvalCondition?.Element(q1 + "ApprovalConditionDesc")?.Value,
-                    LinkType = link?.Element(q1 + "LinkType")?.Value,
+                    LinkType = link?.Element(q1 + "LinkType")?.Value,  
                     LinkValue = link?.Element(q1 + "LinkValue")?.Value,
                     CREStatus = internalLegalEntity?.Element(q1 + "CREStatus")?.Value,
                     LegalName = internalLegalEntity?.Element(q1 + "LegalName")?.Value ??
@@ -74,7 +74,7 @@ public class ParseSystemDecisionResponse
                     RabobankMasterscaleRating = applicableRating?.Element(q1 + "RabobankMasterscaleRating")?.Value,
                     ExternalIdType = externalId?.Element(q1 + "ExternalIdType")?.Value,
                     ExternalIdValue = ParseLong(externalId?.Element(q1 + "ExternalIdValue")?.Value),
-                    TransactionId = null,
+                    TransactionId = 0,
                     ScoreCards = scoreCards ?? new List<ScoreCards>(),
                     ReasonCodes = reasonCodes ?? new List<ReasonCodes>()
                 },
@@ -107,7 +107,6 @@ public class ParseSystemDecisionResponse
 
     public class SubmitICSResponseOutput
     {
-        public string Name { get; set; } = "SubmitICSResponse";
         public SubmitICSResponseInput Input { get; set; }
     }
 
@@ -123,7 +122,7 @@ public class ParseSystemDecisionResponse
     {
         public decimal? SystemApprovalLimit { get; set; }
         public string SystemDecision { get; set; }
-        public string ScoreDecision { get; set; }
+        //public string ScoreDecision { get; set; }
         public DateTime? SystemDecisionDate { get; set; }
         public string ApprovalConditionCode { get; set; }
         public string ApprovalConditionDescription { get; set; }

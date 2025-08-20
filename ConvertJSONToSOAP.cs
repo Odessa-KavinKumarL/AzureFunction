@@ -1,3 +1,4 @@
+using FunctionApp;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -31,18 +32,18 @@ namespace ConvertSoapToJson
                 XmlDeclaration xmlDeclaration = soapEnvelope.CreateXmlDeclaration("1.0", "utf-8", null);
                 soapEnvelope.AppendChild(xmlDeclaration);
 
-                XmlElement envelope = soapEnvelope.CreateElement("soap", "Envelope", "http://schemas.xmlsoap.org/soap/envelope/");
-                envelope.SetAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-                envelope.SetAttribute("xmlns:xsd", "http://www.w3.org/2001/XMLSchema");
+                XmlElement envelope = soapEnvelope.CreateElement("soap", "Envelope", APIHelper.soapenv);
+                envelope.SetAttribute("xmlns:xsi", APIHelper.xsi);
+                envelope.SetAttribute("xmlns:xsd", APIHelper.xsd);
                 soapEnvelope.AppendChild(envelope);
 
-                XmlElement body = soapEnvelope.CreateElement("soap", "Body", "http://schemas.xmlsoap.org/soap/envelope/");
+                XmlElement body = soapEnvelope.CreateElement("soap", "Body", APIHelper.soapenv);
                 envelope.AppendChild(body);
 
-                XmlElement addResponse = soapEnvelope.CreateElement("AddResponse", "http://tempuri.org/");
+                XmlElement addResponse = soapEnvelope.CreateElement("AddResponse", APIHelper.tempuri);
                 body.AppendChild(addResponse);
 
-                XmlElement addResult = soapEnvelope.CreateElement("AddResult", "http://tempuri.org/");
+                XmlElement addResult = soapEnvelope.CreateElement("AddResult", APIHelper.tempuri);
                 addResponse.AppendChild(addResult);
 
                 using JsonDocument jsonDoc = JsonDocument.Parse(json);
@@ -55,7 +56,7 @@ namespace ConvertSoapToJson
             {
                 log.LogError(ex, "Failed to parse SOAP request.");
                 return new StatusCodeResult(500);
-            }      
+            }
         }
 
         static XmlElement ConvertJsonToXml(XmlDocument doc, JsonElement jsonElement)
@@ -91,7 +92,7 @@ namespace ConvertSoapToJson
 
                 if (property.Value.ValueKind == JsonValueKind.Null)
                 {
-                    propertyElement.SetAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance", "true");
+                    propertyElement.SetAttribute("nil", APIHelper.xsi, "true");
                 }
                 else if (property.Value.ValueKind == JsonValueKind.Array)
                 {

@@ -3,6 +3,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -18,7 +19,10 @@ namespace MyFunctionApp.Services
             var xdoc = XDocument.Parse(soapXmlString);
             var searchDataResponseProcessor = new ParseSearchDataResponse();
             var systemDecisionProcessor = new ParseSystemDecisionResponse();
+            var manualDecisionProcessor = new ParseManualDecisionResponse();
+
             var submitICSResponse = xdoc.Descendants().FirstOrDefault(e => e.Name.LocalName == "SubmitICSResponse");
+            HttpResponseData response = req.CreateResponse(HttpStatusCode.OK);
 
             if (submitICSResponse != null)
             {
@@ -26,7 +30,8 @@ namespace MyFunctionApp.Services
 
                 if (returnStatus != null && returnStatus.Value == "E")
                 {
-                    //return "None";
+                    response.StatusCode = HttpStatusCode.BadRequest;
+                    return response;
                 }
                 var firstChild = submitICSResponse.Elements().FirstOrDefault();
                 if (firstChild != null)
@@ -37,18 +42,31 @@ namespace MyFunctionApp.Services
                     {
                         case "SearchDataResponse":
                             string body = await new StreamReader(req.Body).ReadToEndAsync();
-                            return await searchDataResponseProcessor.ProcessLosResponse(soapXmlString, req);
+                            response = await searchDataResponseProcessor.ProcessLosResponse(soapXmlString, req);
+                            return response;
 
                         case "ObtainDecisionResponse":
-                            return await systemDecisionProcessor.ProcessObtainSystemResponse(soapXmlString, req);
+                            response = await systemDecisionProcessor.ProcessObtainSystemResponse(soapXmlString, req);
+                            return response;
+
+                        //case "ICSManualDecisionResponse":
+                        //    return await new ParseManualDecisionResponse().ProcessManualDecisionResponse(soapXmlString, req);
 
                         default:
-                            throw new Exception("Unknown response type inside SubmitICSResponse.");
+                            response.StatusCode = HttpStatusCode.InternalServerError;
+                            response.WriteString("Unknown response type inside SubmitICSResponse.");
+                            return response;
                     }
                 }
             }
+            var manualDecisionResponse = xdoc.Descendants().FirstOrDefault(e => e.Name.LocalName == "ICSManualDecisionResponse");
+            if (manualDecisionResponse != null)
+            {
+                response = await manualDecisionProcessor.ProcessManualDecisionResponse(soapXmlString, req);
+                return response;
+            }
 
-            return await searchDataResponseProcessor.ProcessLosResponse(soapXmlString, req);
+            return response;
         }
     }
 }
