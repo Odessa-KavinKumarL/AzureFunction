@@ -30,7 +30,21 @@ namespace MyFunctionApp.Services
 
                 if (returnStatus != null && returnStatus.Value == "E")
                 {
-                    response.StatusCode = HttpStatusCode.BadRequest;
+
+                    var appIdElement = xdoc.Descendants()
+                                           .FirstOrDefault(e => e.Name.LocalName == "Reference");
+                    string applicationId = appIdElement?.Value ?? string.Empty;
+
+                    var errorResponse = new
+                    {
+                        Input = new
+                        {
+                            CreditRequestNumber = applicationId,
+                            ReturnStatus = "E"
+                        }
+                    };
+                    await response.WriteAsJsonAsync(errorResponse);
+
                     return response;
                 }
                 var firstChild = submitICSResponse.Elements().FirstOrDefault();

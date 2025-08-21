@@ -1,7 +1,6 @@
 using FunctionApp;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Xml;
@@ -18,17 +17,15 @@ namespace ConvertSoapToJson
         }
 
         [Function("ConvertJSONToSOAP")]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
-            ILogger log)
+        public async Task<HttpResponseData> Run(
+            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req,
+            FunctionContext context)
         {
             try
             {
-
                 string json = await new StreamReader(req.Body).ReadToEndAsync();
 
                 XmlDocument soapEnvelope = new XmlDocument();
-
                 XmlDeclaration xmlDeclaration = soapEnvelope.CreateXmlDeclaration("1.0", "utf-8", null);
                 soapEnvelope.AppendChild(xmlDeclaration);
 
@@ -50,12 +47,16 @@ namespace ConvertSoapToJson
                 XmlElement rootElement = ConvertJsonToXml(soapEnvelope, jsonDoc.RootElement);
                 addResult.AppendChild(rootElement);
 
-                return new OkObjectResult(soapEnvelope.OuterXml);
+                var response = req.CreateResponse(System.Net.HttpStatusCode.OK);
+                await response.WriteStringAsync(soapEnvelope.OuterXml);
+                return response;
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "Failed to parse SOAP request.");
-                return new StatusCodeResult(500);
+                _logger.LogError(ex, "Failed to parse SOAP request.");
+                var response = req.CreateResponse(System.Net.HttpStatusCode.InternalServerError);
+                await response.WriteStringAsync("Error: " + ex.Message);
+                return response;
             }
         }
 
